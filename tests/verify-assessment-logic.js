@@ -25,7 +25,8 @@ import {
   getCompletedSections,
   getPrecedingSection,
   getLatestUnlockedSection,
-  resetSectionLocking
+  resetSectionLocking,
+  getFullAssessmentReport
 } from '../src/utils/storage.js';
 
 let totalTests = 0;
@@ -399,6 +400,18 @@ assert(populatedAnalytics.recentBySection['section-d'].id === 'att_1', 'Tracks m
 assert(populatedAnalytics.recentBySection['section-e'].id === 'att_2', 'Tracks most recent Section E attempt');
 assert(populatedAnalytics.recentBySection['section-a'].id === 'att_3', 'Tracks most recent Section A attempt');
 assert(populatedAnalytics.recentBySection['section-b'] === null, 'Correctly reports null for unattempted Section B');
+
+// Test Suite 6b: Full Assessment Report & Mistake Diagnostics
+console.log('\n6b. Testing Full Assessment Comprehensive Report & Mistake Analysis:');
+const fullReport = getFullAssessmentReport(sampleAttempts);
+assert(fullReport.sectionsReport.length === 5, 'Generates 5 section report items (A to E)');
+assert(fullReport.sectionsReport.find((s) => s.id === 'section-d').percent === 74, 'Section D reports 74% score');
+assert(fullReport.sectionsReport.find((s) => s.id === 'section-e').percent === 75, 'Section E reports 75% score');
+assert(fullReport.sectionsReport.find((s) => s.id === 'section-a').percent === 100, 'Section A reports 100% completion');
+assert(fullReport.sectionsReport.find((s) => s.id === 'section-b').percent === null, 'Unattempted Section B reports null percent');
+assert(Array.isArray(fullReport.allMistakes), 'Collects mistakes array across objective sections');
+assert(fullReport.totalCompletedSections === 3, 'Tracks 3 completed sections out of 5');
+assert(fullReport.isFullTestComplete === false, 'Correctly flags full test as not complete when Section B is missing');
 
 // -----------------------------------------------------------------------------
 // Test Suite 7: Strict Sequential Section Locking

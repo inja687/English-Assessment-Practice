@@ -681,3 +681,219 @@ export const getOverallAssessmentScore = (attempts = []) => {
     hasScore: false,
   };
 };
+
+/**
+ * Generate a comprehensive diagnostic report across the full 5-section assessment.
+ * Calculates:
+ * - Overall Score % and Benchmark Status
+ * - Individual section breakdown (Section A to E) with % score and completion
+ * - Detailed error list: all mistakes made across Section D (Grammar) and Section E (Listening)
+ *   with question prompt, candidate's wrong answer, correct answer, and grammar/passage rationale
+ * - Weak topic areas identification
+ * @param {Array} attempts - List of attempt records from storage
+ * @returns {Object} Comprehensive full test report
+ */
+export const getFullAssessmentReport = (attempts = []) => {
+  const analytics = calculatePerformanceAnalytics(attempts);
+  const target = getPracticeTarget();
+  const overall = getOverallAssessmentScore(attempts);
+
+  const secA = analytics.recentBySection['section-a'];
+  const secB = analytics.recentBySection['section-b'];
+  const secC = analytics.recentBySection['section-c'];
+  const secD = analytics.recentBySection['section-d'];
+  const secE = analytics.recentBySection['section-e'];
+
+  const formatSectionTime = (secs) => {
+    if (!secs) return '00:00';
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
+
+  const sectionsReport = [
+    {
+      id: 'section-a',
+      code: 'A',
+      title: 'Word Calibration & Mic Check',
+      category: 'Spoken / Reading',
+      attempted: Boolean(secA),
+      percent: secA ? Math.round(((secA.attemptedCount || 0) / (secA.totalQuestions || 5)) * 100) : null,
+      displayScore: secA ? `${Math.round(((secA.attemptedCount || 0) / (secA.totalQuestions || 5)) * 100)}%` : 'Not Taken',
+      scoreText: secA ? `${secA.attemptedCount || 0} / ${secA.totalQuestions || 5} Words` : '0 / 5 Words',
+      status: secA ? (secA.attemptedCount >= (secA.totalQuestions || 5) ? 'Completed' : 'Partially Attempted') : 'Not Started',
+      timeUsedFormatted: formatSectionTime(secA?.timeUsedSeconds),
+      timeUsedSeconds: secA?.timeUsedSeconds || 0,
+      totalExpected: secA?.totalQuestions || 5,
+      completedCount: secA?.attemptedCount || 0,
+      submittedAt: secA?.submittedAt || null,
+      isObjective: false,
+    },
+    {
+      id: 'section-b',
+      code: 'B',
+      title: 'Sentence Repetition',
+      category: 'Spoken / Audio Repetition',
+      attempted: Boolean(secB),
+      percent: secB ? Math.round(((secB.attemptedCount || 0) / (secB.totalQuestions || 18)) * 100) : null,
+      displayScore: secB ? `${Math.round(((secB.attemptedCount || 0) / (secB.totalQuestions || 18)) * 100)}%` : 'Not Taken',
+      scoreText: secB ? `${secB.attemptedCount || 0} / ${secB.totalQuestions || 18} Sentences` : '0 / 18 Sentences',
+      status: secB ? (secB.attemptedCount >= (secB.totalQuestions || 18) ? 'Completed' : 'Partially Attempted') : 'Not Started',
+      timeUsedFormatted: formatSectionTime(secB?.timeUsedSeconds),
+      timeUsedSeconds: secB?.timeUsedSeconds || 0,
+      totalExpected: secB?.totalQuestions || 18,
+      completedCount: secB?.attemptedCount || 0,
+      submittedAt: secB?.submittedAt || null,
+      isObjective: false,
+    },
+    {
+      id: 'section-c',
+      code: 'C',
+      title: '1-Minute Extempore Speech',
+      category: 'Spoken Fluency',
+      attempted: Boolean(secC),
+      percent: secC ? Math.round(((secC.attemptedCount || 0) / (secC.totalQuestions || 3)) * 100) : null,
+      displayScore: secC ? `${Math.round(((secC.attemptedCount || 0) / (secC.totalQuestions || 3)) * 100)}%` : 'Not Taken',
+      scoreText: secC ? `${secC.attemptedCount || 0} / ${secC.totalQuestions || 3} Topics` : '0 / 3 Topics',
+      status: secC ? (secC.attemptedCount >= (secC.totalQuestions || 3) ? 'Completed' : 'Partially Attempted') : 'Not Started',
+      timeUsedFormatted: formatSectionTime(secC?.timeUsedSeconds),
+      timeUsedSeconds: secC?.timeUsedSeconds || 0,
+      totalExpected: secC?.totalQuestions || 3,
+      completedCount: secC?.attemptedCount || 0,
+      submittedAt: secC?.submittedAt || null,
+      isObjective: false,
+    },
+    {
+      id: 'section-d',
+      code: 'D',
+      title: 'Grammar & English Usage',
+      category: 'Objective Grammar',
+      attempted: Boolean(secD),
+      percent: secD?.scorePercent ?? null,
+      displayScore: secD?.scorePercent !== undefined ? `${secD.scorePercent}%` : 'Not Taken',
+      scoreText: secD ? `${secD.correctCount || 0} / ${secD.totalQuestions || 34} Correct` : '0 / 34 Correct',
+      status: secD ? (secD.scorePercent >= target ? 'Target Met' : 'Below Target') : 'Not Started',
+      timeUsedFormatted: formatSectionTime(secD?.timeUsedSeconds),
+      timeUsedSeconds: secD?.timeUsedSeconds || 0,
+      totalExpected: secD?.totalQuestions || 34,
+      correctCount: secD?.correctCount || 0,
+      incorrectCount: secD?.incorrectCount || 0,
+      unansweredCount: secD?.unansweredCount || 0,
+      submittedAt: secD?.submittedAt || null,
+      isObjective: true,
+      categoryPerformance: secD?.categoryPerformance || {},
+    },
+    {
+      id: 'section-e',
+      code: 'E',
+      title: 'Listening Comprehension Stories',
+      category: 'Listening Comprehension',
+      attempted: Boolean(secE),
+      percent: secE?.scorePercent ?? null,
+      displayScore: secE?.scorePercent !== undefined ? `${secE.scorePercent}%` : 'Not Taken',
+      scoreText: secE ? `${secE.correctCount || 0} / 8 Correct` : '0 / 8 Correct',
+      status: secE ? (secE.scorePercent >= target ? 'Target Met' : 'Below Target') : 'Not Started',
+      timeUsedFormatted: formatSectionTime(secE?.timeUsedSeconds),
+      timeUsedSeconds: secE?.timeUsedSeconds || 0,
+      totalExpected: 8,
+      correctCount: secE?.correctCount || 0,
+      incorrectCount: secE?.incorrectCount || 0,
+      unansweredCount: secE?.unansweredCount || 0,
+      storiesPlayedCount: secE?.storiesPlayedCount || 0,
+      submittedAt: secE?.submittedAt || null,
+      isObjective: true,
+      storyPerformance: secE?.storyPerformance || [],
+    },
+  ];
+
+  // Aggregate all mistakes across Section D & Section E
+  const allMistakes = [];
+  if (secD?.questionsReview && Array.isArray(secD.questionsReview)) {
+    secD.questionsReview.forEach((q) => {
+      if (q.isAttempted && !q.isCorrect) {
+        allMistakes.push({
+          id: `mistake_d_${q.questionNumber}`,
+          sectionId: 'section-d',
+          sectionCode: 'D',
+          sectionName: 'Section D — Grammar & English Usage',
+          questionNumber: q.questionNumber,
+          category: q.category || 'Grammar Rule',
+          prompt: q.sentence || q.prompt,
+          userAnswer: q.userAnswer || 'No Answer',
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation || 'Review grammatical rules for this structure.',
+          isUnanswered: false,
+        });
+      } else if (!q.isAttempted) {
+        allMistakes.push({
+          id: `mistake_d_${q.questionNumber}_unanswered`,
+          sectionId: 'section-d',
+          sectionCode: 'D',
+          sectionName: 'Section D — Grammar & English Usage',
+          questionNumber: q.questionNumber,
+          category: q.category || 'Grammar Rule',
+          prompt: q.sentence || q.prompt,
+          userAnswer: 'Unanswered (Skipped)',
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation || 'Question was skipped.',
+          isUnanswered: true,
+        });
+      }
+    });
+  }
+
+  if (secE?.questionsReview && Array.isArray(secE.questionsReview)) {
+    secE.questionsReview.forEach((q) => {
+      if (q.type === 'mcq') {
+        if (q.isAttempted && !q.isCorrect) {
+          allMistakes.push({
+            id: `mistake_e_${q.questionNumber}`,
+            sectionId: 'section-e',
+            sectionCode: 'E',
+            sectionName: 'Section E — Listening Comprehension',
+            questionNumber: q.questionNumber,
+            category: q.storyTitle ? `Story: ${q.storyTitle}` : 'Audio Story Detail',
+            prompt: q.prompt,
+            userAnswer: q.userAnswer || 'No Answer',
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || 'Review the details spoken in the audio recording.',
+            isUnanswered: false,
+          });
+        } else if (!q.isAttempted) {
+          allMistakes.push({
+            id: `mistake_e_${q.questionNumber}_unanswered`,
+            sectionId: 'section-e',
+            sectionCode: 'E',
+            sectionName: 'Section E — Listening Comprehension',
+            questionNumber: q.questionNumber,
+            category: q.storyTitle ? `Story: ${q.storyTitle}` : 'Audio Story Detail',
+            prompt: q.prompt,
+            userAnswer: 'Unanswered (Skipped)',
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || 'Question was skipped.',
+            isUnanswered: true,
+          });
+        }
+      }
+    });
+  }
+
+  // Weak grammar categories
+  const weakGrammarCategories = analytics.sectionDAnalytics.weakCategories || [];
+
+  return {
+    overallScorePercent: overall.scorePercent,
+    displayOverallScore: overall.displayScore,
+    metTarget: overall.metTarget,
+    target,
+    totalCompletedSections: sectionsReport.filter((s) => s.attempted).length,
+    isFullTestComplete: sectionsReport.every((s) => s.attempted),
+    sectionsReport,
+    allMistakes,
+    mistakesCount: allMistakes.length,
+    incorrectCount: allMistakes.filter((m) => !m.isUnanswered).length,
+    unansweredCount: allMistakes.filter((m) => m.isUnanswered).length,
+    weakGrammarCategories,
+    analytics,
+  };
+};

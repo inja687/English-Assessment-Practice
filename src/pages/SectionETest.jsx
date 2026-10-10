@@ -24,7 +24,8 @@ import {
   BookOpen
 } from 'lucide-react';
 import { generateSectionEQuestions } from '../data/sectionEStories';
-import { saveAttempt, getPracticeTarget, getAttempts, getOverallAssessmentScore } from '../utils/storage';
+import { saveAttempt, getPracticeTarget, getAttempts, getFullAssessmentReport } from '../utils/storage';
+import FullAssessmentReportCard from '../components/FullAssessmentReportCard';
 
 /**
  * Section E Assessment Interface — Listening Comprehension
@@ -255,7 +256,6 @@ export default function SectionETest() {
   const totalAttempted = attemptedMCQCount + storiesPlayedCount;
   const revisitCount = Object.values(revisitFlags).filter(Boolean).length;
   const unattemptedCount = 12 - totalAttempted;
-  const timeUsed = 600 - sectionTimeRemaining;
 
   // Objective Scoring for 8 MCQs
   const scoring = useMemo(() => {
@@ -394,11 +394,7 @@ export default function SectionETest() {
   // ----------------------------------------------------
   if (isTestFinished) {
     const allAttempts = getAttempts();
-    const overallScoreData = getOverallAssessmentScore(allAttempts);
-    const overallDisplayPercent = overallScoreData.scorePercent !== null && overallScoreData.scorePercent !== undefined
-      ? overallScoreData.scorePercent
-      : scoring.scorePercent;
-    const overallMetTarget = overallDisplayPercent >= practiceTarget;
+    const fullReport = getFullAssessmentReport(allAttempts);
 
     const filteredReviewQuestions = mcqQuestions.filter((q) => {
       const isAns = answers[q.id] !== undefined;
@@ -411,150 +407,24 @@ export default function SectionETest() {
 
     return (
       <div className="min-h-screen bg-[#07192f] p-4 sm:p-8 flex flex-col justify-start items-center">
-        <div className="w-full max-w-4xl bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="w-full max-w-5xl bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-2xl space-y-6">
           <div className="border-b border-slate-100 pb-5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 mb-2">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Section E Complete</span>
+              <span>Full Assessment Concluded</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Section E Summary — Listening Comprehension
+              Assessment Results & Diagnostic Error Report
             </h1>
             <p className="text-sm text-slate-600 mt-1">
               {timeExpired 
-                ? 'Time expired (10:00 limit reached). Review your comprehension breakdown below.' 
-                : 'You have concluded Section E and completed the full mock assessment!'}
+                ? 'Time expired (10:00 limit reached). Review your overall mock result, section-by-section scores, and error analysis below.' 
+                : 'Congratulations! You have concluded Section E and completed the full mock assessment. Review your detailed score card and error diagnostics below.'}
             </p>
           </div>
 
-          {/* 1. Overall Mock Assessment Result Card (Prominently displayed) */}
-          <div className={`p-6 rounded-2xl border-2 transition-all shadow-md ${
-            overallMetTarget
-              ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/90 border-emerald-300'
-              : 'bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-100/90 border-indigo-300'
-          }`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                    Full Mock Assessment Combined Score
-                  </span>
-                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                    overallMetTarget 
-                      ? 'bg-emerald-200 text-emerald-900 border border-emerald-300' 
-                      : 'bg-indigo-200 text-indigo-900 border border-indigo-300'
-                  }`}>
-                    {overallMetTarget ? 'Target Benchmark Met' : 'Below Practice Target'}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-3">
-                  <span className={`text-5xl sm:text-6xl font-black font-mono tracking-tight ${
-                    overallMetTarget ? 'text-emerald-700' : 'text-indigo-700'
-                  }`}>
-                    {overallDisplayPercent}%
-                  </span>
-                  <div className="text-xs sm:text-sm text-slate-600 font-medium leading-snug">
-                    <div>Overall Practice Target: <strong>{practiceTarget}%</strong></div>
-                    <span className="text-xs text-slate-500 mt-0.5 block">
-                      Combined Objective Accuracy: {overallScoreData.correctCount || scoring.correct} correct out of {overallScoreData.answeredCount || 8} MCQs
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Individual Section Score Pills */}
-              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-                {overallScoreData.dScore !== null && overallScoreData.dScore !== undefined && (
-                  <div className="px-3.5 py-2 bg-white rounded-xl border border-slate-200 shadow-2xs text-center min-w-[90px]">
-                    <span className="block text-[10px] font-bold uppercase text-slate-500">Section D</span>
-                    <span className="text-base font-extrabold text-amber-700">{overallScoreData.dScore}%</span>
-                  </div>
-                )}
-                <div className="px-3.5 py-2 bg-white rounded-xl border border-slate-200 shadow-2xs text-center min-w-[90px]">
-                  <span className="block text-[10px] font-bold uppercase text-slate-500">Section E</span>
-                  <span className="text-base font-extrabold text-purple-700">{scoring.scorePercent}%</span>
-                </div>
-                <Link
-                  to="/results"
-                  id="btn-summary-to-results"
-                  className="px-4 py-2.5 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5"
-                >
-                  <span>Full Analytics</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Section E Specific Score Banner */}
-          <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-            scoring.metTarget ? 'bg-emerald-50/80 border-emerald-300' : 'bg-purple-50/80 border-purple-300'
-          }`}>
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider block text-slate-500 mb-1">
-                Section E Comprehension MCQ Score
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className={`text-4xl font-black ${scoring.metTarget ? 'text-emerald-700' : 'text-purple-700'}`}>
-                  {scoring.scorePercent}%
-                </span>
-                <span className="text-sm font-semibold text-slate-600">
-                  ({scoring.correct} of 8 correct)
-                </span>
-              </div>
-              <span className="text-xs text-slate-600 mt-1 block">
-                Practice Benchmark: <strong>{practiceTarget}%</strong> • Stories Played: <strong>{storiesPlayedCount} of 4</strong>
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="text-center px-3 py-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
-                <span className="block text-xl font-bold text-emerald-600">{scoring.correct}</span>
-                <span className="text-[10px] uppercase font-bold text-slate-500">Correct</span>
-              </div>
-              <div className="text-center px-3 py-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
-                <span className="block text-xl font-bold text-rose-600">{scoring.incorrect}</span>
-                <span className="text-[10px] uppercase font-bold text-slate-500">Incorrect</span>
-              </div>
-              <div className="text-center px-3 py-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
-                <span className="block text-xl font-bold text-purple-600">{storiesPlayedCount}/4</span>
-                <span className="text-[10px] uppercase font-bold text-slate-500">Stories</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Time Used Tile */}
-          <div className="p-4 rounded-xl bg-purple-50/50 border border-purple-200 flex items-center justify-between text-xs sm:text-sm">
-            <div className="flex items-center gap-2 text-slate-800">
-              <Clock className="w-4 h-4 text-purple-600" />
-              <span>Total Section Time Used: <strong>{formatTime(timeUsed)}</strong> (out of 10:00)</span>
-            </div>
-            <span className="text-xs text-slate-500 font-medium">10-Minute Maximum</span>
-          </div>
-
-          {/* All Sections Completed Banner */}
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
-            <div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/20 text-white uppercase tracking-wider mb-1">
-                Full Assessment Complete
-              </span>
-              <h3 className="text-lg font-bold">
-                All 5 Sections Completed Successfully!
-              </h3>
-              <p className="text-xs text-blue-100">
-                View your complete performance analytics, score trends, and recording history on the Results Dashboard.
-              </p>
-            </div>
-
-            <Link
-              to="/results"
-              id="btn-view-full-results"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-white text-indigo-700 hover:bg-blue-50 shadow-md transition shrink-0"
-            >
-              <span>View Results & Analytics</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+          {/* Full Mock Assessment Report Card (Overall Result, Section Breakdown %, Mistakes Analysis) */}
+          <FullAssessmentReportCard report={fullReport} showNavigationButtons={false} />
 
           {/* Question Review Section with Filter */}
           <div className="space-y-3 pt-2">

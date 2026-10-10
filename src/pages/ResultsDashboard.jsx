@@ -17,7 +17,8 @@ import {
   Trash2, 
   TrendingUp, 
   TrendingDown, 
-  Minus
+  Minus,
+  Award
 } from 'lucide-react';
 import { 
   getAttempts, 
@@ -25,15 +26,17 @@ import {
   getPracticeTarget, 
   savePracticeTarget, 
   calculatePerformanceAnalytics,
-  getOverallAssessmentScore
+  getOverallAssessmentScore,
+  getFullAssessmentReport
 } from '../utils/storage';
 import { ASSESSMENT_SECTIONS } from '../data/sections';
+import FullAssessmentReportCard from '../components/FullAssessmentReportCard';
 
 export default function ResultsDashboard() {
   const navigate = useNavigate();
   const [attempts, setAttempts] = useState(() => getAttempts());
   const [practiceTarget, setPracticeTargetState] = useState(() => getPracticeTarget());
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'analytics' | 'history'
+  const [activeTab, setActiveTab] = useState('report'); // 'report' | 'overview' | 'analytics' | 'history'
   const [selectedSectionFilter, setSelectedSectionFilter] = useState('all');
   const [viewingAttempt, setViewingAttempt] = useState(null); // Attempt object for detail modal
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
@@ -54,6 +57,11 @@ export default function ResultsDashboard() {
   // Re-calculate analytics whenever attempts or practiceTarget change
   const analytics = useMemo(() => {
     return calculatePerformanceAnalytics(attempts);
+  }, [attempts]);
+
+  // Full 5-section diagnostic assessment report
+  const fullReport = useMemo(() => {
+    return getFullAssessmentReport(attempts);
   }, [attempts]);
 
   // Filtered attempts for history tab
@@ -300,6 +308,20 @@ export default function ResultsDashboard() {
         <div className="mt-8 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-2">
           <button
             type="button"
+            onClick={() => setActiveTab('report')}
+            id="tab-report"
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+              activeTab === 'report'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            <Award className="w-4 h-4" />
+            <span>Full Report & Mistakes Analysis</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('overview')}
             id="tab-overview"
             className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
@@ -341,6 +363,34 @@ export default function ResultsDashboard() {
           </button>
         </div>
       </div>
+
+      {/* --------------------------------------------------------------------- */}
+      {/* TAB: COMPREHENSIVE FULL ASSESSMENT REPORT CARD & MISTAKE DIAGNOSTICS   */}
+      {/* --------------------------------------------------------------------- */}
+      {activeTab === 'report' && (
+        <div className="space-y-6">
+          {attempts.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center max-w-lg mx-auto space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                <Award className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">No Assessment Records Yet</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Complete a mock test session or individual section to generate your full diagnostic report card, section % breakdown, and error analysis.
+              </p>
+              <Link
+                to="/setup"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                <span>Take Full Mock Test</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          ) : (
+            <FullAssessmentReportCard report={fullReport} showNavigationButtons={false} />
+          )}
+        </div>
+      )}
 
       {/* --------------------------------------------------------------------- */}
       {/* TAB 1: OVERVIEW & LATEST SECTION RESULTS */}
