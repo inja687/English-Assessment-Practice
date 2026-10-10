@@ -63,35 +63,52 @@ export default function RecentAttempts({ attempts = [], onClear }) {
       </div>
 
       <div className="divide-y divide-slate-100">
-        {attempts.map((attempt) => (
-          <div key={attempt.id} className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/75 transition">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 mt-0.5">
-                <Award className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-800">
-                  {attempt.title || 'Full Mock Assessment'}
-                </h4>
-                <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {new Date(attempt.timestamp).toLocaleDateString()}
-                  </span>
-                  <span>•</span>
-                  <span>Duration: {attempt.timeSpent || 'N/A'}</span>
+        {attempts.map((attempt) => {
+          const displayScore = attempt.scorePercent !== undefined 
+            ? `${attempt.scorePercent}%` 
+            : attempt.score !== undefined 
+            ? `${attempt.score}%` 
+            : 'Recorded';
+          const attemptDate = attempt.submittedAt || attempt.timestamp || attempt.startedAt;
+          const formattedDate = attemptDate ? new Date(attemptDate).toLocaleDateString() : 'Recent';
+          const durationText = attempt.timeUsedSeconds 
+            ? `${Math.floor(attempt.timeUsedSeconds / 60)}m ${attempt.timeUsedSeconds % 60}s` 
+            : attempt.timeSpent || 'Completed';
+
+          return (
+            <div key={attempt.id} className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/75 transition">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 mt-0.5">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800">
+                    {attempt.sectionName || attempt.title || 'Full Mock Assessment'}
+                  </h4>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {formattedDate}
+                    </span>
+                    <span>•</span>
+                    <span>Duration: {durationText}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="text-right">
-              <span className="text-lg font-bold text-blue-600">
-                {attempt.score !== undefined ? `${attempt.score}%` : 'Recorded'}
-              </span>
-              <p className="text-xs text-slate-400">Score</p>
+              <div className="text-right">
+                <span className="text-lg font-bold text-blue-600">
+                  {displayScore}
+                </span>
+                <p className="text-xs text-slate-400">
+                  {attempt.correctCount !== undefined 
+                    ? `${attempt.correctCount} / ${attempt.isObjective ? (attempt.sectionId === 'section-e' ? 8 : (attempt.totalQuestions || 34)) : (attempt.totalQuestions || 0)} correct` 
+                    : 'Score'}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

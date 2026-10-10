@@ -24,7 +24,8 @@ import {
   clearAttempts, 
   getPracticeTarget, 
   savePracticeTarget, 
-  calculatePerformanceAnalytics 
+  calculatePerformanceAnalytics,
+  getOverallAssessmentScore
 } from '../utils/storage';
 import { ASSESSMENT_SECTIONS } from '../data/sections';
 
@@ -159,6 +160,85 @@ export default function ResultsDashboard() {
           </div>
         </div>
 
+        {/* Overall Assessment Performance Score Banner */}
+        {(() => {
+          const overallScoreData = getOverallAssessmentScore(attempts);
+          return (
+            <div className={`mt-6 p-6 sm:p-7 rounded-2xl border-2 transition-all shadow-sm ${
+              overallScoreData.hasScore
+                ? overallScoreData.metTarget
+                  ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/70 border-emerald-300'
+                  : 'bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-100/70 border-purple-300'
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Overall Mock Assessment Score
+                    </span>
+                    {overallScoreData.hasScore && (
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                        overallScoreData.metTarget 
+                          ? 'bg-emerald-200 text-emerald-900 border border-emerald-300' 
+                          : 'bg-purple-200 text-purple-900 border border-purple-300'
+                      }`}>
+                        {overallScoreData.metTarget ? 'Target Achieved' : 'Below Practice Target'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-baseline gap-3">
+                    <span className={`text-5xl sm:text-6xl font-black font-mono tracking-tight ${
+                      overallScoreData.hasScore 
+                        ? overallScoreData.metTarget ? 'text-emerald-700' : 'text-purple-700'
+                        : 'text-slate-400'
+                    }`}>
+                      {overallScoreData.displayScore}
+                    </span>
+                    <div className="text-xs sm:text-sm text-slate-600 font-medium leading-snug">
+                      {overallScoreData.hasScore ? (
+                        <>
+                          <div>Practice Benchmark: <strong>{practiceTarget}%</strong></div>
+                          {analytics.overallMCQAnswered > 0 && (
+                            <span className="block text-slate-500 text-xs mt-0.5">
+                              Cumulative accuracy: {analytics.overallMCQCorrect} correct out of {analytics.overallMCQAnswered} objective questions
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <div>Take Section D or E to calculate your overall score</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+                  {analytics.sectionDAnalytics.latestScore !== null && (
+                    <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs text-center min-w-[95px]">
+                      <span className="text-slate-500 block text-[10px] font-bold uppercase">Section D</span>
+                      <strong className="text-base font-bold text-slate-900">{analytics.sectionDAnalytics.latestScore}%</strong>
+                    </div>
+                  )}
+                  {analytics.sectionEAnalytics.latestScore !== null && (
+                    <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs text-center min-w-[95px]">
+                      <span className="text-slate-500 block text-[10px] font-bold uppercase">Section E</span>
+                      <strong className="text-base font-bold text-slate-900">{analytics.sectionEAnalytics.latestScore}%</strong>
+                    </div>
+                  )}
+                  <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs text-center min-w-[95px]">
+                    <span className="text-slate-500 block text-[10px] font-bold uppercase">Spoken Modules</span>
+                    <strong className="text-base font-bold text-slate-900">
+                      {analytics.recordingAnalytics.sectionA.attempts > 0 || analytics.recordingAnalytics.sectionB.attempts > 0 || analytics.recordingAnalytics.sectionC.attempts > 0
+                        ? `${(analytics.recordingAnalytics.sectionA.attempts > 0 ? 1 : 0) + (analytics.recordingAnalytics.sectionB.attempts > 0 ? 1 : 0) + (analytics.recordingAnalytics.sectionC.attempts > 0 ? 1 : 0)}/3 Done`
+                        : '0/3 Done'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* 6 Top Summary Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-6">
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
@@ -199,10 +279,10 @@ export default function ResultsDashboard() {
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
             <span className="block text-2xl font-black text-purple-600" id="stat-mcq-accuracy">
-              {analytics.overallMCQAnswered > 0 ? `${analytics.overallMCQAccuracy}%` : '--'}
+              {getOverallAssessmentScore(attempts).hasScore ? getOverallAssessmentScore(attempts).displayScore : (analytics.overallMCQAnswered > 0 ? `${analytics.overallMCQAccuracy}%` : '--')}
             </span>
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              MCQ Accuracy
+              Overall Score %
             </span>
           </div>
 

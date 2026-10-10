@@ -24,7 +24,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { generateSectionEQuestions } from '../data/sectionEStories';
-import { saveAttempt, getPracticeTarget } from '../utils/storage';
+import { saveAttempt, getPracticeTarget, getAttempts, getOverallAssessmentScore } from '../utils/storage';
 
 /**
  * Section E Assessment Interface — Listening Comprehension
@@ -393,6 +393,13 @@ export default function SectionETest() {
   // Summary Screen (rendered upon finishing or timeout)
   // ----------------------------------------------------
   if (isTestFinished) {
+    const allAttempts = getAttempts();
+    const overallScoreData = getOverallAssessmentScore(allAttempts);
+    const overallDisplayPercent = overallScoreData.scorePercent !== null && overallScoreData.scorePercent !== undefined
+      ? overallScoreData.scorePercent
+      : scoring.scorePercent;
+    const overallMetTarget = overallDisplayPercent >= practiceTarget;
+
     const filteredReviewQuestions = mcqQuestions.filter((q) => {
       const isAns = answers[q.id] !== undefined;
       const isCorr = isAns && answers[q.id] === q.correctAnswer;
@@ -420,13 +427,72 @@ export default function SectionETest() {
             </p>
           </div>
 
-          {/* Score Banner */}
+          {/* 1. Overall Mock Assessment Result Card (Prominently displayed) */}
+          <div className={`p-6 rounded-2xl border-2 transition-all shadow-md ${
+            overallMetTarget
+              ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/90 border-emerald-300'
+              : 'bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-100/90 border-indigo-300'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    Full Mock Assessment Combined Score
+                  </span>
+                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                    overallMetTarget 
+                      ? 'bg-emerald-200 text-emerald-900 border border-emerald-300' 
+                      : 'bg-indigo-200 text-indigo-900 border border-indigo-300'
+                  }`}>
+                    {overallMetTarget ? 'Target Benchmark Met' : 'Below Practice Target'}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <span className={`text-5xl sm:text-6xl font-black font-mono tracking-tight ${
+                    overallMetTarget ? 'text-emerald-700' : 'text-indigo-700'
+                  }`}>
+                    {overallDisplayPercent}%
+                  </span>
+                  <div className="text-xs sm:text-sm text-slate-600 font-medium leading-snug">
+                    <div>Overall Practice Target: <strong>{practiceTarget}%</strong></div>
+                    <span className="text-xs text-slate-500 mt-0.5 block">
+                      Combined Objective Accuracy: {overallScoreData.correctCount || scoring.correct} correct out of {overallScoreData.answeredCount || 8} MCQs
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Individual Section Score Pills */}
+              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                {overallScoreData.dScore !== null && overallScoreData.dScore !== undefined && (
+                  <div className="px-3.5 py-2 bg-white rounded-xl border border-slate-200 shadow-2xs text-center min-w-[90px]">
+                    <span className="block text-[10px] font-bold uppercase text-slate-500">Section D</span>
+                    <span className="text-base font-extrabold text-amber-700">{overallScoreData.dScore}%</span>
+                  </div>
+                )}
+                <div className="px-3.5 py-2 bg-white rounded-xl border border-slate-200 shadow-2xs text-center min-w-[90px]">
+                  <span className="block text-[10px] font-bold uppercase text-slate-500">Section E</span>
+                  <span className="text-base font-extrabold text-purple-700">{scoring.scorePercent}%</span>
+                </div>
+                <Link
+                  to="/results"
+                  id="btn-summary-to-results"
+                  className="px-4 py-2.5 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5"
+                >
+                  <span>Full Analytics</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Section E Specific Score Banner */}
           <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
             scoring.metTarget ? 'bg-emerald-50/80 border-emerald-300' : 'bg-purple-50/80 border-purple-300'
           }`}>
             <div>
               <span className="text-xs font-bold uppercase tracking-wider block text-slate-500 mb-1">
-                Comprehension MCQ Score
+                Section E Comprehension MCQ Score
               </span>
               <div className="flex items-baseline gap-2">
                 <span className={`text-4xl font-black ${scoring.metTarget ? 'text-emerald-700' : 'text-purple-700'}`}>

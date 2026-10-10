@@ -30,7 +30,9 @@ import {
   isSectionUnlocked,
   getLatestUnlockedSection,
   getCompletedSections,
-  resetSectionLocking
+  resetSectionLocking,
+  getOverallAssessmentScore,
+  calculatePerformanceAnalytics
 } from '../utils/storage';
 
 export default function Dashboard() {
@@ -53,8 +55,10 @@ export default function Dashboard() {
   };
 
   const testsCompleted = attempts.length;
-  const lastScore = attempts.length > 0 && attempts[0].score !== undefined 
-    ? `${attempts[0].score}%` 
+  const overallScoreData = getOverallAssessmentScore(attempts);
+  const analytics = calculatePerformanceAnalytics(attempts);
+  const overallScoreDisplay = overallScoreData.hasScore 
+    ? overallScoreData.displayScore 
     : '--';
 
   const latestUnlocked = getLatestUnlockedSection();
@@ -186,22 +190,93 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* 2b. Overall Assessment Performance Score Card (displayed when attempts exist) */}
+      {overallScoreData.hasScore && (
+        <section className={`p-5 sm:p-7 rounded-2xl border-2 transition-all shadow-sm ${
+          overallScoreData.metTarget
+            ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/70 border-emerald-300'
+            : 'bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-100/70 border-purple-300'
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  Overall Mock Assessment Result
+                </span>
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                  overallScoreData.metTarget 
+                    ? 'bg-emerald-200 text-emerald-900 border border-emerald-300' 
+                    : 'bg-purple-200 text-purple-900 border border-purple-300'
+                }`}>
+                  {overallScoreData.metTarget ? 'Target Benchmark Met' : 'Below Practice Target'}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-3">
+                <span className={`text-4xl sm:text-5xl font-black font-mono tracking-tight ${
+                  overallScoreData.metTarget ? 'text-emerald-700' : 'text-purple-700'
+                }`}>
+                  {overallScoreData.displayScore}
+                </span>
+                <div className="text-xs sm:text-sm text-slate-600 font-medium">
+                  Practice Benchmark: <strong>{practiceTarget}%</strong>
+                  {analytics.overallMCQAnswered > 0 && (
+                    <span className="block text-slate-500 text-xs mt-0.5">
+                      Cumulative accuracy: {analytics.overallMCQCorrect} correct out of {analytics.overallMCQAnswered} objective questions
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+              {analytics.sectionDAnalytics.latestScore !== null && (
+                <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-2xs text-xs">
+                  <span className="text-slate-500 block text-[10px] font-bold uppercase">Section D</span>
+                  <strong className="text-slate-800 font-bold">{analytics.sectionDAnalytics.latestScore}%</strong>
+                </div>
+              )}
+              {analytics.sectionEAnalytics.latestScore !== null && (
+                <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-2xs text-xs">
+                  <span className="text-slate-500 block text-[10px] font-bold uppercase">Section E</span>
+                  <strong className="text-slate-800 font-bold">{analytics.sectionEAnalytics.latestScore}%</strong>
+                </div>
+              )}
+              <Link
+                to="/results"
+                id="btn-view-detailed-results"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-blue-600 transition shadow-xs"
+              >
+                <span>View Full Results</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 3. Key Metrics & Stat Cards */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
           title="Tests Completed"
           value={testsCompleted}
-          subtitle="Mock exams taken"
+          subtitle="Mock modules taken"
           icon={CheckCircle2}
           color="blue"
           badge={testsCompleted === 0 ? 'Not Started' : 'Active'}
         />
         <StatCard
-          title="Last Practice Score"
-          value={lastScore}
-          subtitle="Based on recent mock test"
+          title="Overall Practice Score"
+          value={overallScoreDisplay}
+          subtitle={
+            overallScoreData.hasScore
+              ? overallScoreData.metTarget
+                ? `Benchmark Met (>= ${practiceTarget}%)`
+                : `Target: ${practiceTarget}% (Keep Practicing)`
+              : "Complete Section D or E to compute"
+          }
           icon={Trophy}
           color="emerald"
+          badge={overallScoreData.hasScore ? (overallScoreData.metTarget ? 'Target Met' : 'In Progress') : 'Not Taken Yet'}
         />
         <StatCard
           title="Practice Target"

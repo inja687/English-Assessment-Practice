@@ -557,12 +557,36 @@ export const calculatePerformanceAnalytics = (attempts = []) => {
     }
   });
 
+  // Calculate combined latest score across Section D and Section E
+  let latestCombinedCorrect = 0;
+  let latestCombinedTotal = 0;
+  if (dLatest && typeof dLatest.correctCount === 'number') {
+    latestCombinedCorrect += dLatest.correctCount;
+    latestCombinedTotal += dLatest.totalQuestions || 34;
+  }
+  if (eLatest && typeof eLatest.correctCount === 'number') {
+    latestCombinedCorrect += eLatest.correctCount;
+    latestCombinedTotal += (eLatest.correctCount + (eLatest.incorrectCount || 0)) || 8;
+  }
+
+  const latestCombinedScorePercent = latestCombinedTotal > 0
+    ? Math.round((latestCombinedCorrect / latestCombinedTotal) * 100)
+    : null;
+
+  const overallScorePercent = latestCombinedScorePercent !== null
+    ? latestCombinedScorePercent
+    : overallMCQAnswered > 0
+    ? overallMCQAccuracy
+    : null;
+
   return {
     totalAttempts,
     totalCompletedSections: totalAttempts,
     overallMCQAnswered,
     overallMCQCorrect,
     overallMCQAccuracy,
+    overallScorePercent,
+    latestCombinedScorePercent,
     latestAttemptDate,
     recentBySection,
     sectionDAnalytics: {
@@ -583,5 +607,77 @@ export const calculatePerformanceAnalytics = (attempts = []) => {
       mcqsCorrectTotal: eMCQsCorrect,
     },
     recordingAnalytics,
+  };
+};
+
+/**
+ * Get unified overall percentage score across the assessment.
+ * Ensures the candidate is never shown '--' if any section has been practiced.
+ * @param {Array} attempts - List of attempt records
+ * @returns {Object} { scorePercent, displayScore, metTarget, answeredCount, correctCount, hasScore }
+ */
+export const getOverallAssessmentScore = (attempts = []) => {
+  if (!Array.isArray(attempts) || attempts.length === 0) {
+    return {
+      scorePercent: null,
+      displayScore: '--',
+      metTarget: false,
+      answeredCount: 0,
+      correctCount: 0,
+      hasScore: false,
+    };
+  }
+
+  const analytics = calculatePerformanceAnalytics(attempts);
+  const target = getPracticeTarget();
+
+  if (analytics.overallScorePercent !== null && analytics.overallScorePercent !== undefined) {
+    const score = analytics.overallScorePercent;
+    return {
+      scorePercent: score,
+      displayScore: `${score}%`,
+      metTarget: score >= target,
+      answeredCount: analytics.overallMCQAnswered,
+      correctCount: analytics.overallMCQCorrect,
+      hasScore: true,
+    };
+  }
+
+  if (analytics.overallMCQAnswered > 0) {
+    const score = analytics.overallMCQAccuracy;
+    return {
+      scorePercent: score,
+      displayScore: `${score}%`,
+      metTarget: score >= target,
+      answeredCount: analytics.overallMCQAnswered,
+      correctCount: analytics.overallMCQCorrect,
+      hasScore: true,
+    };
+  }
+
+  // If only spoken/recording attempts exist (Sections A, B, C)
+  const totalSpoken = (analytics.recordingAnalytics?.sectionA?.totalCompleted || 0) +
+    (analytics.recordingAnalytics?.sectionB?.totalCompleted || 0) +
+    (analytics.recordingAnalytics?.sectionC?.totalCompleted || 0);
+
+  if (totalSpoken > 0) {
+    return {
+      scorePercent: 100,
+      displayScore: '100% Spoken Recorded',
+      metTarget: true,
+      answeredCount: totalSpoken,
+      correctCount: totalSpoken,
+      hasScore: true,
+      isSpokenOnly: true,
+    };
+  }
+
+  return {
+    scorePercent: null,
+    displayScore: '--',
+    metTarget: false,
+    answeredCount: 0,
+    correctCount: 0,
+    hasScore: false,
   };
 };
