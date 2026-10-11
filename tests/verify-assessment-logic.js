@@ -51,7 +51,7 @@ console.log('\n--- Running Assessment Practice Portal Automated Test Suite ---\n
 // -----------------------------------------------------------------------------
 console.log('1. Testing Section D Generation & Answer Integrity:');
 
-assert(GRAMMAR_QUESTION_BANK.length === 108, `Grammar question bank contains all 108 authentic questions (${GRAMMAR_QUESTION_BANK.length} === 108)`);
+assert(GRAMMAR_QUESTION_BANK.length === 109, `Grammar question bank contains all 109 authentic questions (${GRAMMAR_QUESTION_BANK.length} === 109)`);
 
 // Verify all bank questions have valid schema
 let allBankQuestionsValid = true;
@@ -60,7 +60,7 @@ GRAMMAR_QUESTION_BANK.forEach((q) => {
     allBankQuestionsValid = false;
   }
 });
-assert(allBankQuestionsValid, 'All 108 questions in GRAMMAR_QUESTION_BANK have 4 options, valid correctAnswer, and explanations');
+assert(allBankQuestionsValid, 'All 109 questions in GRAMMAR_QUESTION_BANK have 4 options, valid correctAnswer, and explanations');
 
 // Check user specific questions across categories
 const hasBettyQuestion = GRAMMAR_QUESTION_BANK.some((q) => q.prompt.includes('Betty') && q.correctAnswer === 'cycles');
@@ -85,14 +85,33 @@ const hasWeSawMovieVoice = GRAMMAR_QUESTION_BANK.some((q) => q.prompt.includes('
 const hasOldClothesVoice = GRAMMAR_QUESTION_BANK.some((q) => q.prompt.includes('The old clothes were donated') && q.correctAnswer === 'They donated the old clothes yesterday.');
 const hasComputerVoice = GRAMMAR_QUESTION_BANK.some((q) => q.prompt.includes('My computer is being sent') && q.correctAnswer === 'They are sending my computer for repair.');
 
+const hasGoPlacesSentence = GRAMMAR_QUESTION_BANK.some((q) => q.correctAnswer && q.correctAnswer.includes('go places'));
+const hasSelenophileSentence = GRAMMAR_QUESTION_BANK.some((q) => q.correctAnswer && q.correctAnswer.includes('selenophile'));
+
 assert(hasBettyQuestion && hasEngineerQuestion && hasOneOfBags && hasMeasles, 'Bank contains user Verb Forms & Subject-Verb Agreement questions');
 assert(hasLastEvening && hasHadIKnown && hasLoudMusic, 'Bank contains user Tenses questions');
 assert(hasMarketArticle && hasHonorArticle && hasImmemorial, 'Bank contains user Articles questions');
 assert(hasSwitchFan && hasAtSea && hasBesidesYou && hasBenefitOfDoubt, 'Bank contains user Prepositions questions');
 assert(hasWeSawMovieVoice && hasOldClothesVoice && hasComputerVoice, 'Bank contains user Active & Passive Voice questions');
+assert(hasGoPlacesSentence && hasSelenophileSentence, 'Bank contains user Panel 6 Sentence Identification questions');
 
 const dAttempt1 = generateSectionDQuestions([]);
 assert(dAttempt1.length === 34, `Generates exactly 34 questions (received ${dAttempt1.length})`);
+
+// Verify strict sequential ordering (Verb -> Tense -> Article -> Preposition -> Voice -> Sentence Selection)
+const isPart1Verbs = dAttempt1.slice(0, 7).every((q) => q.partNumber === 1 && q.category === 'Verb Forms & Subject–Verb Agreement');
+const isPart2Tenses = dAttempt1.slice(7, 14).every((q) => q.partNumber === 2 && q.category === 'Tenses');
+const isPart3Articles = dAttempt1.slice(14, 19).every((q) => q.partNumber === 3 && q.category === 'Articles');
+const isPart4Prepositions = dAttempt1.slice(19, 24).every((q) => q.partNumber === 4 && q.category === 'Prepositions');
+const isPart5Voice = dAttempt1.slice(24, 29).every((q) => q.partNumber === 5 && q.category === 'Active & Passive Voice');
+const isPart6Sentences = dAttempt1.slice(29, 34).every((q) => q.partNumber === 6);
+
+assert(isPart1Verbs, 'Q1-Q7 are strictly Verb Forms & Subject-Verb Agreement (Part 1)');
+assert(isPart2Tenses, 'Q8-Q14 are strictly Tenses (Part 2)');
+assert(isPart3Articles, 'Q15-Q19 are strictly Articles (Part 3)');
+assert(isPart4Prepositions, 'Q20-Q24 are strictly Prepositions (Part 4)');
+assert(isPart5Voice, 'Q25-Q29 are strictly Active & Passive Voice (Part 5)');
+assert(isPart6Sentences, 'Q30-Q34 are strictly Identify the Grammatically Correct Sentence (Part 6)');
 
 // Verify all 34 questions have valid options and preserved correct answers
 let allOptionsHaveCorrectAnswer = true;
@@ -123,6 +142,13 @@ const dAttempt2 = generateSectionDQuestions(prevIds);
 assert(dAttempt2.length === 34, 'Retake generates 34 questions');
 const overlap = dAttempt2.filter((q) => prevIds.includes(q.bankId));
 assert(overlap.length < 34, `Retake attempts to sample different questions (overlap ${overlap.length} of 34)`);
+const retakeOrdered = dAttempt2.slice(0, 7).every((q) => q.partNumber === 1) &&
+  dAttempt2.slice(7, 14).every((q) => q.partNumber === 2) &&
+  dAttempt2.slice(14, 19).every((q) => q.partNumber === 3) &&
+  dAttempt2.slice(19, 24).every((q) => q.partNumber === 4) &&
+  dAttempt2.slice(24, 29).every((q) => q.partNumber === 5) &&
+  dAttempt2.slice(29, 34).every((q) => q.partNumber === 6);
+assert(retakeOrdered, 'Retake strictly maintains sequential category order Q1-Q34');
 
 // -----------------------------------------------------------------------------
 // Test Suite 2: Section E Listening Comprehension (12 Questions = 4 Stories + 8 MCQs)

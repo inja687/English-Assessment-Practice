@@ -62,7 +62,39 @@ export default function SectionDIntro() {
 
         {/* Explanatory Paragraph */}
         <p className="text-sm sm:text-[15px] text-slate-700 leading-relaxed font-normal">
-          This section evaluates your mastery of standard English grammar and usage. It contains 34 multiple-choice questions focusing on key areas including subject-verb agreement, verb tenses, prepositions, articles, pronouns, and sentence correction. Carefully read each sentence and select the single best option that correctly completes the sentence or repairs the error. The total duration for this section is 15 minutes.
+          This section evaluates your mastery of standard English grammar and usage. It contains 34 multiple-choice questions arranged sequentially in 6 fixed parts, following the authentic assessment paper structure:
+        </p>
+
+        {/* 6 Sequential Parts Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 my-5">
+          <div className="p-2.5 rounded-lg border border-rose-200 bg-rose-50/70">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">Part 1 (Q1–Q7)</span>
+            <span className="text-xs font-semibold text-slate-800">Verb Forms (Bracket)</span>
+          </div>
+          <div className="p-2.5 rounded-lg border border-blue-200 bg-blue-50/70">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">Part 2 (Q8–Q14)</span>
+            <span className="text-xs font-semibold text-slate-800">Appropriate Tense</span>
+          </div>
+          <div className="p-2.5 rounded-lg border border-fuchsia-200 bg-fuchsia-50/70">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-700 block">Part 3 (Q15–Q19)</span>
+            <span className="text-xs font-semibold text-slate-800">Appropriate Article</span>
+          </div>
+          <div className="p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/70">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Part 4 (Q20–Q24)</span>
+            <span className="text-xs font-semibold text-slate-800">Appropriate Preposition</span>
+          </div>
+          <div className="p-2.5 rounded-lg border border-purple-200 bg-purple-50/70">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">Part 5 (Q25–Q29)</span>
+            <span className="text-xs font-semibold text-slate-800">Change the Voice</span>
+          </div>
+          <div className="p-2.5 rounded-lg border border-amber-200 bg-amber-50/70">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">Part 6 (Q30–Q34)</span>
+            <span className="text-xs font-semibold text-slate-800">Correct Sentence Selection</span>
+          </div>
+        </div>
+
+        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+          Carefully read each question and select the single best option that correctly completes the sentence or repairs the error. The total duration for this section is 15 minutes.
         </p>
 
         {/* Action Button: Proceed to Test aligned toward lower-left */}

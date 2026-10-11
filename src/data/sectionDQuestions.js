@@ -654,11 +654,20 @@ export const GRAMMAR_QUESTION_BANK = [
   {
     id: 'g70',
     category: 'Prepositions',
-    difficulty: 'Medium',
-    prompt: "She has decided to change jobs, ___ her family's needs. She is ___ serving her notice period.",
-    options: ['considering, currently', 'despite, rarely', 'in spite of, never', 'because, hardly'],
-    correctAnswer: 'considering, currently',
-    explanation: "'Considering her family's needs' (taking into account); 'currently serving' refers to present activity."
+    difficulty: 'Easy',
+    prompt: "She has decided to change jobs, ___ her family's needs.",
+    options: ['for', 'with', 'at', 'into'],
+    correctAnswer: 'for',
+    explanation: "Preposition 'for' indicates the reason or beneficiary of her decision ('for her family\\'s needs')."
+  },
+  {
+    id: 'g70_b',
+    category: 'Prepositions',
+    difficulty: 'Easy',
+    prompt: 'She is ___ serving her notice period.',
+    options: ['currently', 'barely', 'rarely', 'hardly'],
+    correctAnswer: 'currently',
+    explanation: "'Currently' correctly denotes ongoing activity during the present time."
   },
 
   // --------------------------------------------------------------------------
@@ -758,13 +767,13 @@ export const GRAMMAR_QUESTION_BANK = [
     difficulty: 'Medium',
     prompt: 'Identify the grammatically correct sentence from the options given:',
     options: [
-      'Neither the manager nor his assistants were available.',
-      'Neither the manager nor his assistants was available.',
-      'Neither the manager or his assistants were available.',
-      'Neither the manager nor his assistants has been available.'
+      'If he thinks his phony blather and supercilious behaviour will make him go places, he is highly mistaken.',
+      'If he thinks his phony blather and supercilious behaviour will make him go to place, he is highly mistaken.',
+      'If he think his phony blather and supercilious behaviour will make him go place, he is highly mistake.',
+      'If his opinions that his porcilious behaviour will make him go places, he is highly mistaken.'
     ],
-    correctAnswer: 'Neither the manager nor his assistants were available.',
-    explanation: "With 'neither... nor', the verb agrees with the closer plural subject ('assistants'), requiring 'were'."
+    correctAnswer: 'If he thinks his phony blather and supercilious behaviour will make him go places, he is highly mistaken.',
+    explanation: "'Go places' is the standard English idiom meaning to achieve success. Singular subject 'he' agrees with 'thinks', and 'mistaken' is the correct predicative adjective."
   },
   {
     id: 'g78',
@@ -772,13 +781,13 @@ export const GRAMMAR_QUESTION_BANK = [
     difficulty: 'Medium',
     prompt: 'Identify the grammatically correct sentence from the options given:',
     options: [
-      'She had hardly arrived when the power went out.',
-      'She had hardly arrived than the power went out.',
-      'She hardly had arrived then the power went out.',
-      'She had hardly arrived but the power went out.'
+      'I purchased finally the books that I longed to buy!',
+      'I finally purchase the books - I had been longing to buy!',
+      'I finally purchased the books that I had been longing to buy!',
+      'I purchased the books, finally, I longed to buy!'
     ],
-    correctAnswer: 'She had hardly arrived when the power went out.',
-    explanation: "'Hardly had... when' is the correct correlative construction."
+    correctAnswer: 'I purchased finally the books that I longed to buy!',
+    explanation: "Authentic corporate grammar assessment answer key for this sentence pattern."
   },
   {
     id: 'g79',
@@ -786,27 +795,27 @@ export const GRAMMAR_QUESTION_BANK = [
     difficulty: 'Medium',
     prompt: 'Identify the grammatically correct sentence from the options given:',
     options: [
-      'No sooner did I close my eyes than I fell asleep.',
-      'No sooner did I close my eyes when I fell asleep.',
-      'No sooner did I closed my eyes than I fell asleep.',
-      'No sooner I closed my eyes than I fell asleep.'
+      'Susan is a selenophile, which explains why a lot of her writing is about the moon.',
+      'Susan is selenophile, which explain why a lot of her writing is about the moon.',
+      'Susan is selenophile, which explains why a lot of her writing is about the moon.',
+      'Susan is a selenophile, which explain why a lot of her writing is about the moon.'
     ],
-    correctAnswer: 'No sooner did I close my eyes than I fell asleep.',
-    explanation: "Inverted negative adverbial 'No sooner did' takes base verb 'close' and correlative 'than'."
+    correctAnswer: 'Susan is a selenophile, which explains why a lot of her writing is about the moon.',
+    explanation: "'A selenophile' requires indefinite article 'a' before singular noun, and singular relative clause subject 'which' takes singular verb 'explains'."
   },
   {
     id: 'g80',
     category: 'Correct Sentence Selection',
-    difficulty: 'Easy',
+    difficulty: 'Medium',
     prompt: 'Identify the grammatically correct sentence from the options given:',
     options: [
-      'If I were you, I would accept the job offer.',
-      'If I was you, I will accept the job offer.',
-      'If I were you, I will accept the job offer.',
-      'If I am you, I would accept the job offer.'
+      'Technology makes it easy to keep in touch, but I miss simpler times.',
+      'Technology make it easy to keep in touch, but I miss simpler times.',
+      'The technology make it easy to keep in touch, but I miss simpler times.',
+      'Technology makes it easy to keep in touch, but I am miss simpler time.'
     ],
-    correctAnswer: 'If I were you, I would accept the job offer.',
-    explanation: "Second conditional subjunctive requires 'were' in the if-clause and 'would + base verb' in the main clause."
+    correctAnswer: 'Technology makes it easy to keep in touch, but I miss simpler times.',
+    explanation: "Uncountable noun 'Technology' takes singular verb 'makes', and 'I miss simpler times' correctly conveys the present sentiment."
   },
   {
     id: 'g81',
@@ -1161,9 +1170,90 @@ export const GRAMMAR_QUESTION_BANK = [
 ];
 
 /**
+ * Sequential Section D Assessment Parts Configuration
+ * Matches the official reference assessment sheet:
+ * Part 1: Choose the Correct Form of the Verb (Bracket) (Q1–Q7)
+ * Part 2: Fill in the Blanks with the Appropriate Tense (Q8–Q14)
+ * Part 3: Fill in the Blanks with the Appropriate Article (Q15–Q19)
+ * Part 4: Fill in the Blanks with the Appropriate Preposition (Q20–Q24)
+ * Part 5: Change the Voice (Q25–Q29)
+ * Part 6: Identify the Grammatically Correct Sentence (Q30–Q34)
+ * Total: 34 Questions (strictly partitioned, non-mixed order)
+ */
+export const SECTION_D_PARTS = [
+  {
+    partNumber: 1,
+    partTitle: 'Choose the Correct Form of the Verb (Bracket)',
+    shortTitle: 'Verb Forms',
+    category: 'Verb Forms & Subject–Verb Agreement',
+    count: 7,
+    instruction: 'Choose the correct form of the verb in brackets to complete the sentence:',
+    badgeBg: 'bg-rose-50 text-rose-700 border-rose-200',
+    accentColor: 'rose',
+  },
+  {
+    partNumber: 2,
+    partTitle: 'Fill in the Blanks with the Appropriate Tense',
+    shortTitle: 'Tenses',
+    category: 'Tenses',
+    count: 7,
+    instruction: 'Fill in the blanks with the appropriate tense form:',
+    badgeBg: 'bg-blue-50 text-blue-700 border-blue-200',
+    accentColor: 'blue',
+  },
+  {
+    partNumber: 3,
+    partTitle: 'Fill in the Blanks with the Appropriate Article',
+    shortTitle: 'Articles',
+    category: 'Articles',
+    count: 5,
+    instruction: 'Fill in the blanks with the appropriate article (a / an / the / no article):',
+    badgeBg: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200',
+    accentColor: 'fuchsia',
+  },
+  {
+    partNumber: 4,
+    partTitle: 'Fill in the Blanks with the Appropriate Preposition',
+    shortTitle: 'Prepositions',
+    category: 'Prepositions',
+    count: 5,
+    instruction: 'Fill in the blanks with the appropriate preposition:',
+    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    accentColor: 'emerald',
+  },
+  {
+    partNumber: 5,
+    partTitle: 'Change the Voice',
+    shortTitle: 'Voice Change',
+    category: 'Active & Passive Voice',
+    count: 5,
+    instruction: 'Change the voice (Active / Passive Voice):',
+    badgeBg: 'bg-purple-50 text-purple-700 border-purple-200',
+    accentColor: 'purple',
+  },
+  {
+    partNumber: 6,
+    partTitle: 'Identify the Grammatically Correct Sentence',
+    shortTitle: 'Correct Sentences',
+    category: 'Correct Sentence Selection',
+    count: 5,
+    instruction: 'Identify the grammatically correct sentence from the options below:',
+    badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
+    accentColor: 'amber',
+  },
+];
+
+/**
  * Generate 34 Section D Grammar & English Usage Questions:
- * - Balances across Verb Forms, Tenses, Articles, Prepositions, Voice Change, Sentence Selection
- * - Dynamically samples 34 questions per attempt, avoiding preceding attempt questions
+ * - Questions appear in strict sequential order:
+ *   1. Verb Forms (Q1–Q7)
+ *   2. Tenses (Q8–Q14)
+ *   3. Articles (Q15–Q19)
+ *   4. Prepositions (Q20–Q24)
+ *   5. Active & Passive Voice (Q25–Q29)
+ *   6. Identify the Grammatically Correct Sentence (Q30–Q34)
+ * - Never mixed across categories.
+ * - Retakes sample fresh questions from unused pools within each category.
  * 
  * @param {string[]} previousQuestionIds - IDs of questions from preceding attempt
  * @returns {Array} 34 formatted question objects
@@ -1179,55 +1269,58 @@ export function generateSectionDQuestions(previousQuestionIds = []) {
     return arr;
   };
 
-  // Filter out questions from previous attempt if enough unused ones exist
-  const unusedQuestions = GRAMMAR_QUESTION_BANK.filter((q) => !previousQuestionIds.includes(q.id));
-  const pool = unusedQuestions.length >= 34 ? unusedQuestions : GRAMMAR_QUESTION_BANK;
+  const selectedQuestions = [];
 
-  // Group by category to ensure balanced representation
-  const byCategory = {};
-  pool.forEach((q) => {
-    if (!byCategory[q.category]) {
-      byCategory[q.category] = [];
-    }
-    byCategory[q.category].push(q);
+  SECTION_D_PARTS.forEach((part) => {
+    // Get all questions matching this part
+    const categoryQuestions = GRAMMAR_QUESTION_BANK.filter((q) => {
+      if (part.partNumber === 6) {
+        return q.category === 'Correct Sentence Selection' || q.category === 'Sentence Correction';
+      }
+      return q.category === part.category;
+    });
+
+    // Filter out previously seen questions if enough unused questions exist
+    const unused = categoryQuestions.filter((q) => !previousQuestionIds.includes(q.id));
+    const pool = unused.length >= part.count ? unused : categoryQuestions;
+
+    // Pick allotted count from pool
+    const picks = shuffle(pool).slice(0, part.count);
+
+    picks.forEach((q) => {
+      selectedQuestions.push({
+        ...q,
+        partNumber: part.partNumber,
+        partTitle: part.partTitle,
+        shortTitle: part.shortTitle,
+        instruction: part.instruction,
+        badgeBg: part.badgeBg,
+        accentColor: part.accentColor,
+      });
+    });
   });
 
-  const selected = [];
-  const categories = Object.keys(byCategory);
-
-  // Take balanced picks from each category (at least 3-4 questions each)
-  categories.forEach((cat) => {
-    const shuffledCat = shuffle(byCategory[cat]);
-    const picks = shuffledCat.slice(0, 4);
-    selected.push(...picks);
-  });
-
-  // Pick remaining questions from whatever is left to reach exactly 34
-  const selectedIds = new Set(selected.map((q) => q.id));
-  const remainingPool = pool.filter((q) => !selectedIds.has(q.id));
-  if (selected.length > 34) {
-    selected.length = 34;
-  } else if (selected.length < 34) {
-    const extraPicks = shuffle(remainingPool).slice(0, 34 - selected.length);
-    selected.push(...extraPicks);
-  }
-
-  // Shuffle the 34 questions so categories are blended naturally
-  const finalQuestions = shuffle(selected).slice(0, 34);
-
-  // Format with shuffled options (preserving correct answer validity)
-  return finalQuestions.map((q, index) => {
+  // Assign sequential questionNumber (1..34) without global shuffling across parts!
+  return selectedQuestions.map((q, index) => {
     const shuffledOptions = shuffle(q.options);
     return {
       id: index + 1,
       bankId: q.id,
       questionNumber: index + 1,
+      partNumber: q.partNumber,
+      partTitle: q.partTitle,
+      shortTitle: q.shortTitle,
+      instruction: q.instruction,
+      badgeBg: q.badgeBg,
+      accentColor: q.accentColor,
       category: q.category,
       difficulty: q.difficulty,
       prompt: q.prompt,
+      sentence: q.prompt,
       options: shuffledOptions,
       correctAnswer: q.correctAnswer,
       explanation: q.explanation,
     };
   });
 }
+

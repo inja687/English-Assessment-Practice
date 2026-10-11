@@ -19,7 +19,7 @@ import {
   Info,
   LayoutGrid
 } from 'lucide-react';
-import { generateSectionDQuestions } from '../data/sectionDQuestions';
+import { generateSectionDQuestions, SECTION_D_PARTS } from '../data/sectionDQuestions';
 import { saveAttempt, getPracticeTarget } from '../utils/storage';
 
 /**
@@ -238,8 +238,10 @@ export default function SectionDTest() {
       categoryPerformance: scoring.categoryStats,
       questionsReview: questionsRef.current.map((q) => ({
         questionNumber: q.questionNumber,
+        partNumber: q.partNumber,
         category: q.category,
-        sentence: q.sentence,
+        sentence: q.sentence || q.prompt,
+        prompt: q.prompt,
         userAnswer: answers[q.id] || null,
         correctAnswer: q.correctAnswer,
         isCorrect: answers[q.id] === q.correctAnswer,
@@ -424,12 +426,12 @@ export default function SectionDTest() {
                 return (
                   <div key={q.id} className="p-4 bg-white space-y-2 text-xs">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="w-6 h-6 rounded bg-slate-100 font-bold text-slate-700 flex items-center justify-center shrink-0">
                           {q.questionNumber}
                         </span>
-                        <span className="font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
-                          {q.category}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${q.badgeBg || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                          Part {q.partNumber || ''}: {q.shortTitle || q.category}
                         </span>
                       </div>
 
@@ -736,43 +738,81 @@ export default function SectionDTest() {
         </div>
       </div>
 
-      {/* Quick Grid Palette for 34 Questions */}
+      {/* Quick Grid Palette for 34 Questions grouped by Authentic Parts */}
       {showQuestionGrid && (
-        <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 shadow-inner z-10 animate-in fade-in duration-150">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Question Palette (34 Questions)
-            </span>
+        <div className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-3 shadow-inner z-10 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Question Palette (34 Questions)
+              </span>
+              <span className="text-[11px] text-slate-500 hidden sm:inline">
+                • Organized strictly in sequence (Parts 1 to 6)
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setShowQuestionGrid(false)}
-              className="text-slate-400 hover:text-slate-600 text-xs"
+              className="text-slate-500 hover:text-slate-800 text-xs font-semibold px-2 py-0.5 rounded hover:bg-slate-200 transition"
             >
               Close
             </button>
           </div>
-          <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-            {questions.map((q, idx) => {
-              const isCurrent = idx === currentQuestionIndex;
-              const isAnswered = answers[q.id] !== undefined;
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
+            {SECTION_D_PARTS.map((part) => {
+              const partQuestions = questions.filter((q) => q.partNumber === part.partNumber);
+              const answeredCount = partQuestions.filter((q) => answers[q.id] !== undefined).length;
+              const isCurrentPart = currentQuestion?.partNumber === part.partNumber;
+
               return (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => {
-                    handleSelectQuestion(idx);
-                    setShowQuestionGrid(false);
-                  }}
-                  className={`w-7 h-7 rounded text-xs font-bold border transition ${
-                    isCurrent 
-                      ? 'bg-[#0c59cf] text-white border-[#0c59cf]' 
-                      : isAnswered 
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
-                        : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                <div 
+                  key={part.partNumber} 
+                  className={`p-2.5 rounded-lg border bg-white shadow-2xs transition ${
+                    isCurrentPart ? 'border-blue-400 ring-1 ring-blue-200' : 'border-slate-200'
                   }`}
                 >
-                  {q.questionNumber}
-                </button>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${part.badgeBg}`}>
+                      Part {part.partNumber}: {part.shortTitle}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-medium">
+                      {answeredCount}/{partQuestions.length}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {partQuestions.map((q) => {
+                      const idx = q.questionNumber - 1;
+                      const isCurrent = idx === currentQuestionIndex;
+                      const isAnswered = answers[q.id] !== undefined;
+                      const isRevisit = Boolean(revisitFlags[q.id]);
+
+                      return (
+                        <button
+                          key={q.id}
+                          type="button"
+                          onClick={() => {
+                            handleSelectQuestion(idx);
+                            setShowQuestionGrid(false);
+                          }}
+                          className={`relative w-7 h-7 rounded text-xs font-bold border transition flex items-center justify-center ${
+                            isCurrent 
+                              ? 'bg-[#0c59cf] text-white border-[#0c59cf] ring-2 ring-blue-300' 
+                              : isAnswered 
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200' 
+                                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                          }`}
+                          title={`Q${q.questionNumber}: ${q.shortTitle}`}
+                        >
+                          {q.questionNumber}
+                          {isRevisit && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 ring-1 ring-white" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -784,12 +824,12 @@ export default function SectionDTest() {
         {/* LEFT COLUMN: Question sentence and category (~50% width) */}
         <div className="w-full md:w-1/2 p-4 sm:p-6 md:p-10 border-b md:border-b-0 md:border-r border-[#e2e8f0] overflow-y-visible md:overflow-y-auto shrink-0 md:shrink">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                 Question {currentQuestion.questionNumber}
               </h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                {currentQuestion.category}
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border shadow-2xs ${currentQuestion.badgeBg || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                Part {currentQuestion.partNumber}: {currentQuestion.shortTitle || currentQuestion.category}
               </span>
             </div>
 
@@ -808,11 +848,14 @@ export default function SectionDTest() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug">
-              {currentQuestion.category === 'Correct Sentence Selection'
-                ? 'Identify the grammatically correct sentence from the options below.'
-                : 'Choose the correct option to fill in the blank and complete the sentence.'}
-            </p>
+            <div className="p-3 rounded-lg bg-slate-100/90 border border-slate-200/80">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">
+                {currentQuestion.partTitle || `Part ${currentQuestion.partNumber}`}
+              </span>
+              <p className="text-sm font-semibold text-slate-800 leading-snug">
+                {currentQuestion.instruction || 'Choose the correct option to complete the sentence:'}
+              </p>
+            </div>
 
             <div className="p-4 sm:p-6 rounded-md bg-slate-50/80 border border-slate-200/80 text-slate-900 text-base sm:text-lg leading-relaxed font-normal">
               {currentQuestion.prompt || currentQuestion.sentence}
